@@ -1,0 +1,15 @@
+G:\Code\CS330-Sanxingdui\test\bin\Debug\net6.0\test.exe
+G:\Code\CS330-Sanxingdui\test\bin\Debug\net6.0\test.deps.json
+G:\Code\CS330-Sanxingdui\test\bin\Debug\net6.0\test.runtimeconfig.json
+G:\Code\CS330-Sanxingdui\test\bin\Debug\net6.0\test.dll
+G:\Code\CS330-Sanxingdui\test\bin\Debug\net6.0\test.pdb
+G:\Code\CS330-Sanxingdui\test\obj\Debug\net6.0\test.csproj.AssemblyReference.cache
+G:\Code\CS330-Sanxingdui\test\obj\Debug\net6.0\test.GeneratedMSBuildEditorConfig.editorconfig
+G:\Code\CS330-Sanxingdui\test\obj\Debug\net6.0\test.AssemblyInfoInputs.cache
+G:\Code\CS330-Sanxingdui\test\obj\Debug\net6.0\test.AssemblyInfo.cs
+G:\Code\CS330-Sanxingdui\test\obj\Debug\net6.0\test.csproj.CoreCompileInputs.cache
+G:\Code\CS330-Sanxingdui\test\obj\Debug\net6.0\test.dll
+G:\Code\CS330-Sanxingdui\test\obj\Debug\net6.0\refint\test.dll
+G:\Code\CS330-Sanxingdui\test\obj\Debug\net6.0\test.pdb
+G:\Code\CS330-Sanxingdui\test\obj\Debug\net6.0\test.genruntimeconfig.cache
+G:\Code\CS330-Sanxingdui\test\obj\Debug\net6.0\ref\test.dll
