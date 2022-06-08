@@ -58,6 +58,207 @@ TensorFlowTTS是基于TensorFlow的语音生成架构，特点是借助Tensorflo
 
 ## 代码说明
 
+通过每一帧对鼠标点击的位置发射一条从点击位置垂直屏幕的射线，对场景中的对象进行射线检测。如果对象名称符合命名规范，则判定点中场景中摆放的文物，将场景跳转到单独对象的显示区域。
+```
+Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+RaycastHit hit;
+if (Physics.Raycast(ray,out hit))
+{
+    string name = hit.collider.gameObject.name;
+    if (name.Contains("("))
+    {
+        name = name.Remove(name.Length-4, 4);
+    }
+    window.gameObject.SetActive(true);
+    window.ShowModel(name);
+}
+```
+通过重写unity的Button方法，实现按钮的长按功能，在长按时调整mainCamera的位置实现全景展示。
+```
+    public ButtonClickedEvent my_onLongPress;
+    public ButtonClickedEvent OnLongPress
+    {
+        get { return my_onLongPress; }
+        set { my_onLongPress = value; }
+    }
+ 
+    private bool my_isStartPress = false;
+    private float my_curPointDownTime = 0f;
+    private float my_longPressTime = 0.6f;
+    private bool my_longPressTrigger = false;
+  
+  private bool isStart = false;
+ 
+    void Update()
+    {
+        if (isStart)
+            my_onLongPress.Invoke();
+    }
+ 
+    public override void OnPointerDown(PointerEventData eventData)
+    {
+        base.OnPointerDown(eventData);
+        // my_curPointDownTime = Time.time;
+        // my_isStartPress = true;
+        // my_longPressTrigger = false;
+        isStart = true;
+    }
+ 
+    public override void OnPointerUp(PointerEventData eventData)
+    {
+        base.OnPointerUp(eventData);
+        isStart = false;
+    }
+ 
+    public override void OnPointerExit(PointerEventData eventData)
+    {
+        base.OnPointerExit(eventData);  
+    }
+```
+
+在点击模型跳转后，根据模型名称加载对应prefab，然后加载其相关描述并播放语音。界面中可以通过拖拽来旋转模型。
+```
+if (cd > 0)
+{
+    cd -= Time.deltaTime;
+    return;
+}
+if (Input.GetMouseButtonDown(0))
+{
+    if (Input.mousePosition.x > 960)
+        return;
+    lastPos = Input.mousePosition;
+}
+if (Input.GetMouseButton(0))
+{
+    if (Input.mousePosition.x > 960)
+        return;
+    currentPos = Input.mousePosition;
+    gameObject.transform.Rotate(Vector3.up, (lastPos.x - currentPos.x) * Time.deltaTime * rotateSpeed);
+    gameObject.transform.Rotate(Vector3.left, (lastPos.y - currentPos.y) * Time.deltaTime * rotateSpeed);
+    lastPos = Input.mousePosition;
+}
+```
+UI管理
+```
+public UIViewState ViewState = UIViewState.Visible;
+    //用于点击关闭的背景
+    private GameObject bgObj;
+
+    //初始化
+    public virtual void initial()
+    {
+        OnHide();
+    }
+    //被显示时
+    public virtual void OnShow()
+    {
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
+
+        if (ViewState != UIViewState.Visible)
+        {
+            Vector3 pos = transform.localPosition;
+            pos.z = 0;
+            transform.localPosition = pos;
+
+            ViewState = UIViewState.Visible;
+        }
+
+        UpdateView();
+    }
+
+    public virtual void OnShowWithBG()
+    {
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
+
+        if (ViewState != UIViewState.Visible)
+        {
+            Vector3 pos = transform.localPosition;
+            pos.z = 0;
+            transform.localPosition = pos;
+
+            ViewState = UIViewState.Visible;
+        }
+
+        UpdateView();
+        InitBG();
+    }
+
+    //被隐藏
+    public virtual void OnHide()
+    {
+        Vector3 pos = transform.localPosition;
+        pos.z = -99999;
+        transform.localPosition = pos;
+
+        ViewState = UIViewState.Nonvisible;
+        this.gameObject.SetActive(false);
+    }
+
+    public virtual void OnHideWithBG()
+    {
+        Vector3 pos = transform.localPosition;
+        pos.z = -99999;
+        transform.localPosition = pos;
+
+        ViewState = UIViewState.Nonvisible;
+        this.gameObject.SetActive(false);
+        Destroy(bgObj);
+    }
+
+    //初始化背景(点击背景自动关闭界面)
+    //未设置状态转移机，也就是倒回上一步
+    protected void InitBG()
+    {
+        Transform bgTran = transform.Find("BG");
+        bgObj = new GameObject("BG", typeof(RectTransform));
+        bgTran = bgObj.transform;
+        bgTran.SetParent(transform);
+        bgTran.SetAsFirstSibling();
+        RectTransform rt = bgObj.GetComponent<RectTransform>();
+        Image img = bgTran.GetComponent<Image>();
+        if (img == null)
+        {
+            img = bgTran.gameObject.AddComponent<Image>();
+            img.color = new Color(0, 0, 0, 0f);
+            CanvasRenderer cr = bgTran.GetComponent<CanvasRenderer>();
+            cr.cullTransparentMesh = true;
+        }
+        img.raycastTarget = true;
+        EventTrigger eventTrigger = bgTran.GetComponent<EventTrigger>();
+        if (eventTrigger == null)
+        {
+            eventTrigger = bgTran.gameObject.AddComponent<EventTrigger>();
+        }
+        EventTrigger.Entry entry = new EventTrigger.Entry();
+        entry.eventID = EventTriggerType.PointerClick;
+        entry.callback.AddListener(e => clossePanel());
+        eventTrigger.triggers.Add(entry);
+
+    }
+
+    protected void canntClickBG()
+    {
+        bgObj = new GameObject("BG", typeof(RectTransform));
+        Transform bgTran = bgObj.transform;
+        bgTran.SetParent(transform);
+        bgTran.SetAsFirstSibling();
+        RectTransform rt = bgObj.GetComponent<RectTransform>();
+    }
+
+    protected void closeCanntClickBG()
+    {
+        Destroy(bgObj);
+    }
+
+    protected virtual void clossePanel()
+    {
+        OnHideWithBG();
+        Destroy(bgObj);
+    }
+```
 
 ## 收获总结
 
